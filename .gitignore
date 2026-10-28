@@ -1,0 +1,43 @@
+# Local environment and build output
+.venv/
+__pycache__/
+*.pyc
+artifacts/
+
+# Emulator runtime: cores, BIOS, saves, memory cards
+runtime/
+
+# Disc images and ROMs (never commit game data)
+*.cue
+*.bin
+*.BIN
+*.iso
+*.ISO
+*.chd
+*.img
+*.ccd
+*.sub
+*.mdf
+*.mds
+*.pbp
+*.ecm
+*.zip
+
+# BIOS / firmware dumps
+scph*
+SCPH*
+*.rom
+
+# Saves and states
+*.srm
+*.mcd
+*.state
+
+# Credentials and TLS material
+.env
+.env.*
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
