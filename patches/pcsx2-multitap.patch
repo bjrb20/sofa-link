@@ -1,3 +1,7 @@
+This patch modifies the PCSX2 libretro core (https://github.com/libretro/ps2)
+and is licensed under the GNU General Public License version 3, the same terms
+as that core. The rest of this repository is MIT licensed.
+
 diff --git a/libretro/libretro_core_options.h b/libretro/libretro_core_options.h
 index 9e7a88f6d..379daf110 100644
 --- a/libretro/libretro_core_options.h
