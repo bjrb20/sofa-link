@@ -3,17 +3,17 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#11191d">
-  <title>Browser Couch · Room</title>
-  <link rel="icon" href="data:,">
+  <meta name="theme-color" content="#0c1216">
+  <title>Sofa Link · Room</title>
+  <link rel="icon" href="static/icon.svg" type="image/svg+xml">
   <!-- Relative URLs need a trailing slash, e.g. behind `tailscale serve --set-path /lan/`. -->
   <script>if(!location.pathname.endsWith('/'))location.replace(location.pathname+'/'+location.search+location.hash)</script>
   <link rel="stylesheet" href="static/style.css">
 </head>
 <body>
-  <header><a class="brand" href="./" aria-label="Browser Couch room"><b>BC</b><span>Browser Couch<small>NO INSTALL · JUST A BROWSER</small></span></a><span id="connection" class="connection">Not connected</span></header>
+  <header><a class="brand" href="./" aria-label="Sofa Link room"><img src="static/logo.svg" alt="Sofa Link" width="166" height="59"><small>COUCH MULTIPLAYER<br>IN A BROWSER</small></a><span id="connection" class="connection">Not connected</span></header>
   <main>
-    <div class="intro"><div><span class="eyebrow">BRING YOUR FRIENDS</span><h1>Same screen. Different sofas.</h1></div><p>Join the room, take a player slot, and play together.</p></div>
+    <div class="intro"><div><span class="eyebrow pips">BRING YOUR FRIENDS</span><h1>Same screen. Different sofas.</h1></div><p>Join the room, take a player slot, and play together.</p></div>
     <div class="room-layout">
       <section class="screen-panel" aria-label="Game stream">
         <div class="screen" id="screen">
@@ -21,7 +21,7 @@
           <audio id="rtc-audio" autoplay muted></audio>
           <canvas id="fallback" width="640" height="480" hidden aria-label="Live game"></canvas>
           <div id="join-panel" class="join-panel">
-            <div class="join-card"><span class="eyebrow">BROWSER COUCH / ROOM</span><h2>Ready when you are.</h2><p>One game on the host. Everyone plays from their browser, with nothing to install.</p>
+            <div class="join-card"><span class="eyebrow pips">NO INSTALL · JUST A BROWSER</span><h2>Ready when you are.</h2><p>One game on the host. Everyone plays from their browser, with nothing to install.</p>
               <form id="join-form"><label>Your name<input id="name" autocomplete="nickname" maxlength="24" placeholder="Player name" required></label><label>Room code<input id="pin" type="password" autocomplete="off" maxlength="128" placeholder="Ask your host" required></label><button id="join" class="primary" type="submit">Join the game <span aria-hidden="true">↗</span></button></form>
               <p class="join-note" id="join-note">Your host must keep the game service running.</p>
             </div>

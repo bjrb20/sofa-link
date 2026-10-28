@@ -13,11 +13,11 @@ def main():
     files.append(ROOT/'.gitignore')
     files += [p for folder in ('web', 'tests') for p in (ROOT/folder).rglob('*')
               if p.is_file() and p.suffix in ('.html', '.css', '.mjs', '.py')]
-    target = ROOT/'artifacts/browser-couch.zip'
+    target = ROOT/'artifacts/sofa-link.zip'
     target.parent.mkdir(exist_ok=True)
     with zipfile.ZipFile(target, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as bundle:
         for path in sorted(files):
-            bundle.write(path, Path('browser-couch')/path.relative_to(ROOT))
+            bundle.write(path, Path('sofa-link')/path.relative_to(ROOT))
     with zipfile.ZipFile(target) as bundle:
         assert bundle.testzip() is None
         assert not any('/runtime/' in name or '/.venv/' in name for name in bundle.namelist())

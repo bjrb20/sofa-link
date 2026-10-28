@@ -43,8 +43,9 @@ function updatePads(){
 function renderSlots(){
   const slots=roomState?.slots||Array.from({length:4},(_,n)=>({number:n+1,name:null,yours:false}));
   mine=slots.findIndex(s=>s.yours);
+  if(mine>=0)document.body.dataset.player=String(mine%4+1);else delete document.body.dataset.player;
   $('slots').replaceChildren(...slots.map((s,n)=>{
-    const b=document.createElement('button');b.className='slot'+(s.yours?' yours':'');b.disabled=!token||!controlReady()||Boolean(s.name&&!s.yours);
+    const b=document.createElement('button');b.className='slot p'+(n%4+1)+(s.yours?' yours':s.name?' taken':'');b.disabled=!token||!controlReady()||Boolean(s.name&&!s.yours);
     const number=document.createElement('b');number.textContent=String(s.number).padStart(2,'0');
     const label=document.createElement('span'),name=document.createTextNode(s.name||'Open slot'),small=document.createElement('small');small.textContent=s.yours?'Your controller':s.name?'Player '+s.number:'Join as Player '+s.number;label.append(name,small);
     const mark=document.createElement('em');mark.textContent=s.yours?'YOU':s.name?'IN':'+';b.append(number,label,mark);

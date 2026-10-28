@@ -1,6 +1,6 @@
 # Roadmap
 
-Direction: grow the single-game PS1 host into a general browser couch for many consoles
+Direction: grow the single-game PS1 host into a general couch-multiplayer host for many consoles
 service. One host runs the emulator; every player streams the shared screen and
 sends controls from a browser, phone or gamepad.
 

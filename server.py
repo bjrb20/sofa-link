@@ -442,7 +442,7 @@ def main():
     if args.cert:
         context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
         context.load_cert_chain(args.cert, args.key)
-    print(f'Browser Couch host | {emulator.name} {emulator.version} | {emulator.renderer} video', flush=True)
+    print(f'Sofa Link host | {emulator.name} {emulator.version} | {emulator.renderer} video', flush=True)
     print(f'Room code: {pin}', flush=True)
     print('One shared game. Ctrl+C stops the host and saves the memory card.', flush=True)
     web.run_app(make_app(Room(emulator, pin, ice, args.udp_ports)), host=args.host, port=args.port,

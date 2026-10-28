@@ -1,7 +1,12 @@
-"""Draw the Browser Couch pixel-art logo: assets/logo.svg (and an optional PNG preview)."""
+"""Draw the Sofa Link pixel-art logo.
+
+Writes assets/logo.svg (README), web/logo.svg (page header, no backdrop or
+tagline) and web/icon.svg (tab icon). Pass a path to also write a PNG preview
+of the README logo.
+"""
 import zlib, struct, sys
 U = 4  # px per unit
-W, H = 206, 62
+W, H = 252, 62
 rects = []
 def r(x, y, w, h, c): rects.append((x, y, w, h, c))
 BG, PANEL, BORDER, TEXT, MUTED, GREEN = '#0c1216', '#141e24', '#2b3b45', '#edf3f5', '#91a4ad', '#bdf179'
@@ -22,6 +27,11 @@ F = {
  'I':["11111","00100","00100","00100","00100","00100","11111"],
  'N':["10001","11001","10101","10011","10001","10001","10001"],
  'A':["01110","10001","10001","11111","10001","10001","10001"],
+ 'F':["11111","10000","10000","11110","10000","10000","10000"],
+ 'L':["10000","10000","10000","10000","10000","10000","11111"],
+ 'K':["10001","10010","10100","11000","10100","10010","10001"],
+ 'M':["10001","11011","10101","10101","10001","10001","10001"],
+ 'Y':["10001","10001","01010","00100","00100","00100","00100"],
  'T':["11111","00100","00100","00100","00100","00100","00100"],
  'P':["11110","10001","10001","11110","10000","10000","10000"],
  '-':["00000","00000","00000","11111","00000","00000","00000"],
@@ -76,18 +86,27 @@ r(7, 53, 46, 4, COUCH_D)
 r(6, 57, 2, 2, BORDER); r(52, 57, 2, 2, BORDER)  # legs
 # wordmark
 tx = 66
-text('BROWSER', tx, 9, 2, TEXT)
-end = text('COUCH', tx, 27, 2, GREEN)
-text('CO-OP IN A BROWSER TAB', tx, 47, 1, MUTED)
-for n, c in enumerate(P): r(end+3+n*6, 37, 4, 4, c)   # player pips after COUCH
+text('SOFA', tx, 4, 3, TEXT)
+end = text('LINK', tx, 28, 3, GREEN)
+text('COUCH MULTIPLAYER IN A BROWSER', tx, 53, 1, MUTED)
+for n, c in enumerate(P): r(end+2+n*7, 44, 5, 5, c)   # player pips after LINK
 # --- outputs
-svg = ['<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 %d %d" width="%d" height="%d" shape-rendering="crispEdges" role="img" aria-label="Browser Couch">' % (W, H, W*U, H*U),
-       '<title>Browser Couch</title>']
-svg += ['<rect x="%d" y="%d" width="%d" height="%d" fill="%s"/>' % t for t in rects]
-svg.append('</svg>')
-open(sys.argv[1] if len(sys.argv) > 1 else 'assets/logo.svg', 'w').write('\n'.join(svg)+'\n')
-# PNG preview, only when a second path is given
-if len(sys.argv) < 3: sys.exit()
+BACKDROP = 3      # the first rects are the rounded backdrop
+TAGLINE = [t for t in rects if t[4] == MUTED]
+def write(path, items, box, size_scale=U):
+    x0, y0, w, h = box
+    out = ['<svg xmlns="http://www.w3.org/2000/svg" viewBox="%d %d %d %d" width="%d" height="%d" shape-rendering="crispEdges" role="img" aria-label="Sofa Link">' % (x0, y0, w, h, w*size_scale, h*size_scale),
+           '<title>Sofa Link</title>']
+    out += ['<rect x="%d" y="%d" width="%d" height="%d" fill="%s"/>' % t for t in items]
+    out.append('</svg>')
+    open(path, 'w').write('\n'.join(out)+'\n')
+write('assets/logo.svg', rects, (0, 0, W, H))
+web = [t for t in rects[BACKDROP:] if t not in TAGLINE]
+right = max(x+w for x, y, w, h, c in web) + 1
+write('web/logo.svg', web, (1, 2, right-1, H-3), 1)
+write('web/icon.svg', [t for t in rects[BACKDROP:] if t[0] < 60], (0, 0, 60, 62), 1)
+# PNG preview, only when a path is given
+if len(sys.argv) < 2: sys.exit()
 S = U*2
 img = [[(255, 255, 255, 0)]*(W*S) for _ in range(H*S)]
 for x, y, w, h, c in rects:
@@ -98,4 +117,4 @@ for x, y, w, h, c in rects:
 raw = b''.join(b'\0' + bytes(v for p in row for v in p) for row in img)
 def chunk(t, d): return struct.pack('>I', len(d)) + t + d + struct.pack('>I', zlib.crc32(t+d) & 0xffffffff)
 png = b'\x89PNG\r\n\x1a\n' + chunk(b'IHDR', struct.pack('>IIBBBBB', W*S, H*S, 8, 6, 0, 0, 0)) + chunk(b'IDAT', zlib.compress(raw, 9)) + chunk(b'IEND', b'')
-open(sys.argv[2], 'wb').write(png)
+open(sys.argv[1], 'wb').write(png)

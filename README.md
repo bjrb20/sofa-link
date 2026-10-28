@@ -1,9 +1,10 @@
-<p align="center"><img src="assets/logo.svg" alt="Browser Couch: co-op in a browser tab" width="720"></p>
+<p align="center"><img src="assets/logo.svg" alt="Sofa Link: couch multiplayer in a browser" width="720"></p>
 
-# Browser Couch
+# Sofa Link
 
-Couch co-op in a browser. Your friends open a link and play: no install, no
-account, no setup. They join over a LAN, a tailnet or a VPN; play over the
+Couch multiplayer in a browser, split screen or shared screen. Your friends
+open a link and play: no install, no account, no setup. They join over a LAN,
+a tailnet or a VPN; play over the
 open internet is possible but not yet tested.
 
 One Linux or Apple Silicon macOS machine runs a PS1 or PS2 game. Friends open its website and
