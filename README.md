@@ -1,3 +1,5 @@
+<p align="center"><img src="assets/logo.svg" alt="Browser Couch: co-op in a browser tab" width="720"></p>
+
 # Browser Couch
 
 Couch co-op in a browser. Your friends open a link and play: no install, no
