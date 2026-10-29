@@ -142,6 +142,117 @@ To test that, do this two-minute test with one player:
    your screen.
 7. If the player has a gamepad, tell them to connect it and push a button.
 
+### Play on a network that blocks UDP
+
+Some networks, for example an office network, block UDP. Then WebRTC cannot
+connect, and each browser uses the fallback stream. A TURN relay on the host
+carries WebRTC over TCP:
+
+```
+browser --TCP--> coturn on the host --UDP inside the host--> Sofa Link host
+```
+
+The UDP part stays inside the host, so the network does not see it.
+
+1. Install coturn once: `brew install coturn` on macOS, or
+   `sudo apt install coturn` on Linux. If you use Docker, do not install
+   coturn. Add `--docker` in step 2.
+2. In a second terminal, start the relay:
+
+   ```sh
+   ./tools/run-turn.sh
+   ```
+
+   The script finds the LAN address and the tailnet name of the host. It
+   writes `runtime/turn/ice.json` and shows the full path. Keep this terminal
+   open. If the script finds the wrong address, give it with `--lan-ip` and
+   `--tailnet-host`.
+3. If macOS asks if `turnserver` can accept incoming network connections,
+   click **Allow**.
+4. If players join on the tailnet, add the serve entry once. The script shows
+   the command:
+
+   ```sh
+   tailscale serve --bg --tls-terminated-tcp 5349 tcp://127.0.0.1:3478
+   ```
+
+   Tailscale gives the relay a trusted certificate on port 5349. This entry is
+   for the tailnet only. Do not use `tailscale funnel`.
+5. Start the host with the relay:
+
+   ```sh
+   ./run.sh --disc ~/Games/my-game/GAME.cue --host 0.0.0.0 \
+     --ice-config runtime/turn/ice.json
+   ```
+
+6. Tell a player to open **Connection details**. It must show "WebRTC".
+
+The relay has these limits:
+
+- It accepts only the user `sofa` with the password in
+  `runtime/turn/password`. The script makes the password one time. A browser
+  gets it only after it joins with the room code. To make a new password, use
+  `--new-password`, then start the host again.
+- It sends media only to the LAN address of the host.
+- It has a limit of 24 relay connections.
+- The host itself does not use the relay. It uses only the STUN servers from
+  `--ice-config`.
+
+If the network blocks TCP port 3478, use a port that the network allows, for
+example `./tools/run-turn.sh --port 443`. On Linux, a port below 1024 needs
+root. Then use the serve command that the script shows. Do not use port 443
+on the tailnet, because `tailscale serve` uses it.
+
+The tailnet ACLs can let most devices reach the host only on some ports, for
+example 22, 80 and 443. Then players on the tailnet cannot reach port 5349. To
+use port 80 for the relay:
+
+1. Start the relay with plain TCP on port 80 on the tailnet:
+
+   ```sh
+   ./tools/run-turn.sh --tailnet-tcp-port 80 --tailnet-only
+   ```
+
+2. Add the serve entry that the script shows:
+
+   ```sh
+   tailscale serve --bg --tcp 80 tcp://127.0.0.1:3478
+   ```
+
+3. Start the host with `--ice-config runtime/turn/ice.json`.
+
+On this port, the relay does not use TLS. WireGuard encrypts the tailnet
+traffic, and TURN encrypts the media again. `--tailnet-only` removes the LAN
+relay from the ICE config. Use it when players cannot reach the LAN address of
+the host. A relay that a browser cannot reach delays the join by up to 15
+seconds.
+
+If the relay stops, or a browser cannot reach it, the browser uses the
+fallback stream, as before. If the LAN
+address of the host changes, start the relay again, then start the host again.
+
+With `--docker`, the script runs the official `coturn/coturn` image with the
+same configuration. Docker mounts the configuration read-only. The password is
+only in that file, not on the command line and not in the image. On Linux, the
+container uses the host network. Docker Desktop on macOS and Windows has no
+real host network, so the script publishes the TCP port on the LAN address
+and on `127.0.0.1`. The relay then sends media to the host through the Docker
+network. The `--docker` mode on Docker Desktop is not tested.
+
+#### Linux and Windows
+
+The Sofa Link host runs on Linux (x86-64 and ARM64) and on Apple Silicon
+macOS. It does not run on Windows: `setup.sh` does not install a core for
+Windows.
+
+- Linux: install the `coturn` package of your distribution, or use
+  `--docker`. The relay on Linux is not tested with a real game yet.
+- Windows: the host can run in WSL2, because WSL2 is Linux. Then run the relay
+  in WSL2 too, or use Docker Desktop with `--docker`. For LAN players, forward
+  the TCP ports of the host and of the relay from Windows to WSL2, or use the
+  mirrored network mode of WSL2. The host and the relay on Windows and WSL2
+  are not tested.
+
 ## Start on Linux or an M-chip Mac
 
 Tested runtime: Linux x86-64, Python 3.12, PCSX ReARMed r26 c881679.
@@ -303,8 +414,8 @@ Internet deployment has not yet been tested.
 For WebRTC across NAT, supply `--ice-config /path/to/ice.json`. The file is a
 standard array of ICE server objects; STUN discovers reachable addresses, while
 TURN can relay media when direct connections fail. Supply your own service and
-credentials. The default uses no external STUN or TURN service. A relay server
-is not provisioned by this project. With HTTPS TCP access, the WebSocket fallback
+credentials. The default uses no external STUN or TURN service. To run a relay on
+the host, see "Play on a network that blocks UDP". With HTTPS TCP access, the WebSocket fallback
 can work without UDP, but its bandwidth use and response to congestion are worse.
 
 The current chat cloud environment cannot expose this running emulator to your
@@ -407,6 +518,16 @@ The original-game integration check accepts `QA_ICE_CONFIG=/path/to/ice.json`
 for a browser WebRTC run through a reachable TURN service. Without it, the
 check expects fallback. No relay credentials or relay binary
 are included in this package.
+
+To test the relay of "Play on a network that blocks UDP", start it with
+`tools/run-turn.sh`. Then run `tests/turn_probe.py --ice runtime/turn/ice.json
+--expect webrtc`. The probe uses the synthetic core and starts Chromium with
+`--force-webrtc-ip-handling-policy=disable_non_proxied_udp`, so Chromium can
+use UDP only through the relay. The probe passes when the selected candidate
+is a relay candidate over TCP. Stop the relay and run it again with
+`--expect websocket` to test the fallback. `tests/test_turn_relay.py` starts
+coturn and tests the password and the peer limits. It is skipped when coturn
+is not installed.
 
 ## Upstream components
 

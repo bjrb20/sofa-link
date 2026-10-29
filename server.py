@@ -63,6 +63,21 @@ def bind_udp_in(ports):
     loop.create_datagram_endpoint = ranged
 
 
+def host_ice_servers(servers):
+    """The ICE servers for the host's own peer connections: STUN only.
+
+    The browser needs TURN to reach the host. The host does not: a TURN
+    allocation adds nothing on the relay host and waits 5 s when the relay is down.
+    """
+    host = []
+    for server in servers:
+        urls = [server['urls']] if isinstance(server['urls'], str) else server['urls']
+        stun = [url for url in urls if url.startswith(('stun:', 'stuns:'))]
+        if stun:
+            host.append(dict(urls=stun))
+    return host
+
+
 class Room:
     def __init__(self, emulator, pin, ice_servers=None, udp_ports=None):
         self.udp_ports = udp_ports
@@ -70,6 +85,7 @@ class Room:
         self.hub = emulator.hub
         self.pin = pin
         self.ice_servers = ice_servers or []
+        self.host_ice_servers = [RTCIceServer(**item) for item in host_ice_servers(self.ice_servers)]
         self.relay = MediaRelay()
         self.video, self.audio = GameVideo(emulator), GameAudio(emulator)
         self.clients = {}
@@ -170,7 +186,7 @@ class Room:
         body = await request.json()
         if not isinstance(body, dict) or body.get('type') != 'offer' or not isinstance(body.get('sdp'), str):
             raise web.HTTPBadRequest(text='Invalid WebRTC offer')
-        pc = RTCPeerConnection(RTCConfiguration(iceServers=[RTCIceServer(**item) for item in self.ice_servers]))
+        pc = RTCPeerConnection(RTCConfiguration(iceServers=self.host_ice_servers))
         client['pc'] = pc
         tracks = [self.relay.subscribe(self.video, buffered=False),
                   self.relay.subscribe(self.audio, buffered=False)]

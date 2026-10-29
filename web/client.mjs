@@ -125,9 +125,10 @@ async function connectSocket(){
     ws.addEventListener('close',()=>{clearTimeout(timer);if(socket!==ws)return;fallbackReady=false;clearInput();connected('Connection interrupted');message('The host disconnected. Leave and rejoin to try again.');reject(new Error('The host disconnected.'));});
   });
 }
+// A relay that the network blocks keeps gathering open. After the timeout, use the candidates found so far.
 async function waitForICE(peer){
   if(peer.iceGatheringState==='complete')return;
-  await new Promise((resolve,reject)=>{const timer=setTimeout(()=>{peer.removeEventListener('icegatheringstatechange',change);reject(new Error('Network setup timed out. Check the host connection.'));},15000);
+  await new Promise(resolve=>{const timer=setTimeout(()=>{peer.removeEventListener('icegatheringstatechange',change);resolve();},15000);
     function change(){if(peer.iceGatheringState==='complete'){clearTimeout(timer);peer.removeEventListener('icegatheringstatechange',change);resolve();}}peer.addEventListener('icegatheringstatechange',change);change();});
 }
 $('join-form').addEventListener('submit',async event=>{
@@ -144,9 +145,10 @@ $('join-form').addEventListener('submit',async event=>{
       else{incomingAudio.addTrack(event.track);rtcAudio.srcObject=incomingAudio;rtcAudio.muted=muted;rtcAudio.play().catch(()=>{});}
     });
     peer.addEventListener('connectionstatechange',()=>{if(peer!==pc)return;if(['failed','disconnected'].includes(peer.connectionState)){clearInput();connected('Connection interrupted');message('Stream interrupted. Leave and rejoin; check the host firewall or ICE configuration.');}});
-    await peer.setLocalDescription(await peer.createOffer());await waitForICE(peer);
+    await peer.setLocalDescription(await peer.createOffer());
     transport='webrtc';frames=0;lastFrames=0;audioPackets=0;lastStats=performance.now();
     try{
+      await waitForICE(peer);
       if(!peer.localDescription.sdp.includes('a=candidate:'))throw new Error('No WebRTC network candidates');
       const answer=await api('offer',{sdp:peer.localDescription.sdp,type:'offer'});await peer.setRemoteDescription(answer);
       await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(new Error('WebRTC did not connect')),8000);if(channel.readyState==='open'){clearTimeout(timer);resolve();}else channel.addEventListener('open',()=>{clearTimeout(timer);resolve();},{once:true});});
