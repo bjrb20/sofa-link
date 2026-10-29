@@ -11,8 +11,8 @@ ROOT = Path(__file__).resolve().parent
 def main():
     files = [p for p in ROOT.iterdir() if p.is_file() and p.suffix in ('.py', '.sh', '.md', '.txt')]
     files.append(ROOT/'.gitignore')
-    files += [p for folder in ('web', 'tests') for p in (ROOT/folder).rglob('*')
-              if p.is_file() and p.suffix in ('.html', '.css', '.mjs', '.py')]
+    files += [p for folder in ('web', 'tests', 'tools') for p in (ROOT/folder).rglob('*')
+              if p.is_file() and p.suffix in ('.html', '.css', '.mjs', '.py', '.sh')]
     target = ROOT/'artifacts/sofa-link.zip'
     target.parent.mkdir(exist_ok=True)
     with zipfile.ZipFile(target, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as bundle:
